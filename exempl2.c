@@ -7,7 +7,6 @@ typedef struct {
     int quantidade;
 } Produto;
 
-
 typedef struct {
     int id;
     char nome[30];
