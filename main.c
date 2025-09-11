@@ -90,19 +90,24 @@ Treinador* cadastrarJogador(Treinador* treinadores){
 }
 
 Treinador* cadastrarPokemon(Treinador* treinadores){
+    printf("Cadastrando pokémon.\n");
     Pokemon pokemonAux;
+    
     char cpf[14];
-    printf("Digite o cpf do Treinador: "); scanf(" %s", &cpf);
+    printf("Digite o cpf do Treinador: "); scanf(" %s", cpf);
+    
+    // Procurando a posição do Treinador que corresponde ao cpf
     int idTreinador = -1;
-
     for(int i = 0; i < qtdTreinadores; i++){
         if(!strcmp(treinadores[i].cpf, cpf)) idTreinador = i;
     }
+    
     if(idTreinador == -1){
-        printf("Treinador não encontrado\n");
+        printf("Treinador não encontrado\n\n");
         return treinadores;
     }
 
+    printf("Informações do pokémon\n");
     // Dados do pokémon
     printf("Id: "), scanf("%d", &pokemonAux.id);
     printf("Nome: "); scanf(" %s", pokemonAux.nome);
@@ -115,7 +120,7 @@ Treinador* cadastrarPokemon(Treinador* treinadores){
     pokemonAux.tipo = (Elemento) elementoAux;
 
     if(!verificarPokemon(treinadores[idTreinador], pokemonAux.id)){
-        printf("Esse id já estar cadastrado!\n");
+        printf("Esse id já estar cadastrado!\n\n");
         return treinadores;
     }
 
@@ -125,33 +130,45 @@ Treinador* cadastrarPokemon(Treinador* treinadores){
 
     if(treinadores[idTreinador].pokemons == NULL){
         printf("Problema de alocacao!\n");
-        free(pokemonsAux);
+        // free(pokemonsAux);
         exit(1);
     }
     treinadores[idTreinador].pokemons[qtd] = pokemonAux;
     treinadores[idTreinador].qtdPokemons++;
+    printf("Pokémon cadastrado com sucesso!\n\n");
     return treinadores;
 }
 
-Treinador* listarJogadores(Treinador* treinadores){
+void listarTreinadores(Treinador* treinadores){
+    printf("Listando jogadores e seus pokémons.\n");
     for(int i = 0; i < qtdTreinadores; i++){
         printf("Treinador: %s\n", treinadores[i].nome);
         for(int w = 0; w < treinadores[i].qtdPokemons; w++){
-            printf("(%d) %s\n", w, treinadores[i].pokemons[w].nome);
+            Pokemon pokemon = treinadores[i].pokemons[w];
+            printf("{id: %d, Nome: %s, At/Df: %d/%d, tipo: %d\n}", pokemon.id, pokemon.nome, pokemon.ataque, pokemon.defesa, pokemon.tipo);
         }
+        printf("\n");
     }
 }
 
-int main(){
-    Treinador *treinadores = NULL, *treinadoresAux = NULL;
+Treinador* removerTreinadores(Treinador* treinadores){
 
-    Pokemon *pokemonsAux = NULL;
+}
+
+Treinador* removerPokemon(Treinador* treinadores){
+
+}
+
+int main(){
+    Treinador *treinadores = NULL;
     int comando;
 
     do{
         printf("(1) Cadastrar treinador\n");
         printf("(2) Cadastrar pokémon\n");
         printf("(3) Listar Jogadores\n");
+        printf("(4) Remover treinador\n");
+        printf("(5) Remover pokemon\n");
         printf("Digite o comando: "); scanf("%d", &comando);
         switch (comando){
         case 1:
@@ -161,7 +178,13 @@ int main(){
             treinadores = cadastrarPokemon(treinadores);
             break;
         case 3:
-            listarJogadores(treinadores);
+            listarTreinadores(treinadores);
+            break;
+        case 4:
+            treinadores = removerTreinador(treinadores);
+            break;
+        case 5:
+            treinadores = removerPokemon(treinadores);
             break;
         default:
             break;
