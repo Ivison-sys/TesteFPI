@@ -15,7 +15,6 @@ typedef struct {
     Elemento tipo;
     int xp;
     int ataque;
-    int defesa;
 } Pokemon;
 
 typedef struct {
@@ -24,7 +23,29 @@ typedef struct {
     int idade;
     Pokemon *pokemons;
     int qtdPokemons;
+    int nivel;
 } Treinador;
+
+char* typename(int i){
+    switch (i){
+    case 1:
+        return "Fogo";
+        break;
+    case 2:
+        return "Água";
+        break;
+    case 3:
+        return "Eletrecidade";
+        break;
+    case 4:
+        return "Planta";
+        break;
+    default:
+        return "";
+        break;
+    }
+}
+
 int qtdTreinadores = 0;
 
 // Funcões auxiliares
@@ -54,9 +75,10 @@ int verificarPokemon(Treinador treinador, int idPokemon){
 }
 
 // Funções principais
-Treinador* cadastrarJogador(Treinador* treinadores){
+Treinador* cadastrarTreinador(Treinador* treinadores){
     printf("Cadastrando Jogador!!\n");
     Treinador treinadorAux;
+    treinadorAux.nivel = 0;
 
     // Dados do treinador
     printf("Nome: "); scanf(" %s", treinadorAux.nome);
@@ -114,7 +136,6 @@ Treinador* cadastrarPokemon(Treinador* treinadores){
     printf("Nome: "); scanf(" %s", pokemonAux.nome);
     printf("XP (Quantidade de vida): "); scanf("%d", &pokemonAux.xp);
     printf("Ataque: "); scanf("%d", &pokemonAux.ataque);
-    printf("Defesa: "); scanf("%d", &pokemonAux.defesa);
     int elementoAux;
     listandoElementos();
     printf("Elemento (o dígito): "); scanf("%d", &elementoAux);
@@ -137,6 +158,8 @@ Treinador* cadastrarPokemon(Treinador* treinadores){
     treinadores[idTreinador].pokemons[qtd] = pokemonAux;
     treinadores[idTreinador].qtdPokemons++;
     printf("Pokémon cadastrado com sucesso!\n\n");
+    // Atualizando o nível do treinador.
+    treinadores[idTreinador].nivel += 2*pokemonAux.xp + pokemonAux.ataque;
     return treinadores;
 }
 
@@ -146,10 +169,10 @@ void listarTreinadores(Treinador* treinadores){
         printf("Não há treinadores cadastrados!");
     }
     for(int i = 0; i < qtdTreinadores; i++){
-        printf("Treinador: %s\n", treinadores[i].nome);
+        printf("(%s) Treinador: %s Nível: %d\n", treinadores[i].cpf, treinadores[i].nome, treinadores[i].nivel);
         for(int w = 0; w < treinadores[i].qtdPokemons; w++){
             Pokemon pokemon = treinadores[i].pokemons[w];
-            printf("{id: %d, Nome: %s, At: %d, Df: %d, tipo: %d}\n", pokemon.id, pokemon.nome, pokemon.ataque, pokemon.defesa, pokemon.tipo);
+            printf("{id: %d, Nome: %s, Xp: %d, At: %d, tipo: %s}\n", pokemon.id, pokemon.nome, pokemon.xp, pokemon.ataque, typename((int) pokemon.tipo));
         }
         printf("\n");
     }
@@ -216,20 +239,54 @@ Treinador* AtualizarPokemon(Treinador* treinadores){
     }
 
     Pokemon pokemonAux;
+
+    // O id não muda
+    pokemonAux.id = keyPokemon;
     // Novos dados do pokémon
     printf("Novas informações do pokémon\n");
     // Dados do pokémon
     printf("Nome: "); scanf(" %s", pokemonAux.nome);
     printf("XP (Quantidade de vida): "); scanf("%d", &pokemonAux.xp);
     printf("Ataque: "); scanf("%d", &pokemonAux.ataque);
-    printf("Defesa: "); scanf("%d", &pokemonAux.defesa);
     int elementoAux;
     listandoElementos();
     printf("Elemento (o dígito): "); scanf("%d", &elementoAux);
     pokemonAux.tipo = (Elemento) elementoAux;
 
+    // Atualizando o nível do treinador
+    treinadores[idPokemon].nivel += 2*pokemonAux.xp + pokemonAux.ataque - (2*treinadores[idTreinador].pokemons[idPokemon].xp + treinadores[idTreinador].pokemons[idPokemon].ataque);
     treinadores[idTreinador].pokemons[idPokemon] = pokemonAux;
     printf("Pokémon cadastrado com sucesso!");
+    return treinadores;
+}
+
+Treinador* rank(Treinador* treinadores){    
+    Treinador treinadorAux;
+    Pokemon pokemonAux;
+    
+    // Ordenando os treinadores
+    for(int i = 0; i < qtdTreinadores; i++){
+        for(int j = 1; j < qtdTreinadores; j++){
+            if(treinadores[j].nivel > treinadores[j-1].nivel){
+                treinadorAux = treinadores[j];
+                treinadores[j] = treinadores[j-1];
+                treinadores[j-1] = treinadorAux;
+            }
+        }
+    }
+
+    // Ordenando os pokémons
+    for(int i = 0; i < qtdTreinadores; i++){
+        for(int w = 0; w < treinadores[i].qtdPokemons; w++){
+            for(int j = 1; j < treinadores[i].qtdPokemons; j++){
+                if(2*treinadores[i].pokemons[j].xp + treinadores[i].pokemons[j].ataque > 2*treinadores[i].pokemons[j-1].xp + treinadores[i].pokemons[j-1].ataque){
+                    pokemonAux = treinadores[i].pokemons[j];
+                    treinadores[i].pokemons[j] = treinadores[i].pokemons[j-1];
+                    treinadores[i].pokemons[j-1] = pokemonAux;
+                }
+            }
+        }
+    }
     return treinadores;
 }
 
@@ -238,16 +295,17 @@ int main(){
     int comando;
 
     do{
+        printf("(0) Sair\n");
         printf("(1) Cadastrar treinador\n");
         printf("(2) Cadastrar pokémon\n");
-        printf("(3) Listar jogadores\n");
+        printf("(3) Listar treinadores\n");
         printf("(4) Remover treinador\n");
         printf("(5) Atualizar pokémon\n");
-        printf("(0) Sair");
+        printf("(6) Visualizar hank\n");
         printf("Digite o comando: "); scanf("%d", &comando);
         switch (comando){
         case 1:
-            treinadores = cadastrarJogador(treinadores);
+            treinadores = cadastrarTreinador(treinadores);
             break;
         case 2:
             treinadores = cadastrarPokemon(treinadores);
@@ -260,6 +318,9 @@ int main(){
             break;
         case 5:
             treinadores = AtualizarPokemon(treinadores);
+            break;
+        case 6:
+            treinadores = rank(treinadores);
             break;
         default:
             break;
